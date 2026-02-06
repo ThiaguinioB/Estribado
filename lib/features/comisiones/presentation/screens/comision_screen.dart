@@ -54,6 +54,10 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
   final _productoController = TextEditingController();
   final _cantidadController = TextEditingController();
   final _precioController = TextEditingController();
+  final _comisionController = TextEditingController();
+  final _ivaOtroController = TextEditingController();
+  
+  String _ivaSeleccionado = '21.0'; // Por defecto 21%
 
   @override
   void dispose() {
@@ -62,6 +66,8 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
     _productoController.dispose();
     _cantidadController.dispose();
     _precioController.dispose();
+    _comisionController.dispose();
+    _ivaOtroController.dispose();
     super.dispose();
   }
 
@@ -137,6 +143,89 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
             keyboardType: TextInputType.number,
             validator: ComisionValidation.validatePrecio,
             onChanged: provider.updatePrecio,
+          ),
+          const SizedBox(height: 16),
+
+          // Porcentaje de IVA
+          DropdownButtonFormField<String>(
+            value: _ivaSeleccionado,
+            decoration: const InputDecoration(
+              labelText: "IVA % *",
+              prefixIcon: Icon(Icons.percent),
+            ),
+            items: const [
+              DropdownMenuItem(value: '0.0', child: Text('0%')),
+              DropdownMenuItem(value: '10.5', child: Text('10.5%')),
+              DropdownMenuItem(value: '21.0', child: Text('21%')),
+              DropdownMenuItem(value: 'otro', child: Text('Otros')),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _ivaSeleccionado = value!;
+                if (value != 'otro') {
+                  provider.updateIva(double.parse(value));
+                  _ivaOtroController.clear();
+                }
+              });
+            },
+          ),
+          
+          // Campo para IVA personalizado
+          if (_ivaSeleccionado == 'otro') ..[
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _ivaOtroController,
+              decoration: const InputDecoration(
+                labelText: "IVA Personalizado %",
+                prefixIcon: Icon(Icons.edit),
+                hintText: "Ej: 15",
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Ingrese el porcentaje de IVA';
+                }
+                final num = double.tryParse(value);
+                if (num == null || num < 0) {
+                  return 'Ingrese un número válido';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                final num = double.tryParse(value);
+                if (num != null) {
+                  provider.updateIva(num);
+                }
+              },
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // Porcentaje de Comisión (campo libre)
+          TextFormField(
+            controller: _comisionController,
+            decoration: const InputDecoration(
+              labelText: "Comisión % *",
+              prefixIcon: Icon(Icons.monetization_on),
+              hintText: "Ej: 10",
+            ),
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Ingrese el porcentaje de comisión';
+              }
+              final num = double.tryParse(value);
+              if (num == null || num < 0) {
+                return 'Ingrese un número válido';
+              }
+              return null;
+            },
+            onChanged: (value) {
+              final num = double.tryParse(value);
+              if (num != null) {
+                provider.updateComision(num);
+              }
+            },
           ),
           const SizedBox(height: 24),
 

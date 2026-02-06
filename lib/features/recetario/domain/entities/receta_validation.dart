@@ -94,10 +94,13 @@ class RecetaValidation {
     
     // Conversión automática
     if (unidad == 'cc' && total >= 1000) {
-      total = total / 1000;
+      total = total / 1000; // cc → L
     } else if (unidad == 'g' && total >= 1000) {
-      total = total / 1000;
+      total = total / 1000; // g → kg
+    } else if (unidad == 'lts' && total >= 1000) {
+      total = total / 1000; // lts → m³ (o mantener en lts)
     }
+    // kg y unidades no se convierten
     
     // Redondear a 4 decimales
     return double.parse(total.toStringAsFixed(4));
@@ -117,7 +120,10 @@ class RecetaValidation {
       return 'L';
     } else if (unidadOriginal == 'g' && total >= 1000) {
       return 'Kg';
+    } else if (unidadOriginal == 'lts' && total >= 1000) {
+      return 'lts'; // Mantener en litros (o usar 'm³' si prefieres)
     }
+    // kg y unidades permanecen sin cambios
     return unidadOriginal;
   }
 }

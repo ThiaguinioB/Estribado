@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/comisiones/presentation/screens/comision_screen.dart';
@@ -5,9 +6,11 @@ import '../../features/comisiones/presentation/screens/comision_list_screen.dart
 import '../../features/recetario/presentation/screens/receta_screen.dart';
 import '../../features/recetario/presentation/screens/receta_list_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../services/microsoft_auth_service.dart';
 
 class AppRouter {
   static final router = GoRouter(
+    navigatorKey: MicrosoftAuthService.navigatorKey,
     initialLocation: '/home',
     routes: [
       GoRoute(

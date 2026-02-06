@@ -2,7 +2,7 @@
 class AppConfig {
   // Microsoft Azure AD Config
   // Tu Client ID actual de Azure
-  static const String microsoftClientId = 'c44b4083-3bb0-49c1-b47d-974e53cbdf3c';
+  static const String microsoftClientId = '9457a928-d8ae-4f0f-a1cb-80a96ca5e1fc';
   
   // IMPORTANTE: Usa 'common' para permitir:
   // - Cuentas personales de Microsoft (@outlook.com, @hotmail.com, @live.com)

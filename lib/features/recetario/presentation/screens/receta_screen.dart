@@ -439,8 +439,11 @@ class _RecetaScreenState extends State<RecetaScreen> {
                       border: OutlineInputBorder(),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'cc', child: Text('cc')),
-                      DropdownMenuItem(value: 'g', child: Text('g')),
+                      DropdownMenuItem(value: 'cc', child: Text('cc (centímetros cúbicos)')),
+                      DropdownMenuItem(value: 'g', child: Text('g (gramos)')),
+                      DropdownMenuItem(value: 'kg', child: Text('kg (kilogramos)')),
+                      DropdownMenuItem(value: 'lts', child: Text('lts (litros)')),
+                      DropdownMenuItem(value: 'unidades', child: Text('unidades')),
                     ],
                     onChanged: (value) {
                       setState(() {
