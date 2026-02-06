@@ -40,23 +40,30 @@ class Comision extends Equatable {
 
   // Método copyWith para inmutabilidad (Vital para gestión de estado segura)
   Comision copyWith({
+    int? numeroOperacion,
+    DateTime? fecha,
     String? clienteNombre,
+    String? clienteCuit,
+    String? productoNombre,
+    String? tipoProducto,
     double? cantidad,
     double? precioUnitario,
     double? porcentajeIva,
     double? porcentajeComision,
-    // ... agregar el resto de campos si es necesario
+    String? estado,
   }) {
     return Comision(
-      fecha: this.fecha,
+      numeroOperacion: numeroOperacion ?? this.numeroOperacion,
+      fecha: fecha ?? this.fecha,
       clienteNombre: clienteNombre ?? this.clienteNombre,
-      clienteCuit: this.clienteCuit,
-      productoNombre: this.productoNombre,
-      tipoProducto: this.tipoProducto,
+      clienteCuit: clienteCuit ?? this.clienteCuit,
+      productoNombre: productoNombre ?? this.productoNombre,
+      tipoProducto: tipoProducto ?? this.tipoProducto,
       cantidad: cantidad ?? this.cantidad,
       precioUnitario: precioUnitario ?? this.precioUnitario,
       porcentajeIva: porcentajeIva ?? this.porcentajeIva,
       porcentajeComision: porcentajeComision ?? this.porcentajeComision,
+      estado: estado ?? this.estado,
     );
   }
 
