@@ -68,12 +68,37 @@ class ExcelGraphService {
     return file;
   }
 
-  /// Sube el archivo Excel a Microsoft OneDrive
+  /// Descarga el archivo Excel existente desde OneDrive
+  Future<Excel?> _downloadExistingExcel(String token, String fileName) async {
+    try {
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/$fileName:/content');
+      
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Archivo Excel descargado desde OneDrive');
+        return Excel.decodeBytes(response.bodyBytes);
+      } else if (response.statusCode == 404) {
+        print('ℹ️ Archivo no existe, se creará uno nuevo');
+        return null;
+      } else {
+        print('⚠️ Error al descargar Excel: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('⚠️ Error al descargar Excel: $e');
+      return null;
+    }
+  }
+
+  /// Actualiza el archivo Excel con las comisiones en OneDrive
   Future<void> uploadComisionesToExcel(List<Comision> comisiones) async {
     try {
-      // Generar archivo Excel
-      final file = await generateExcelFile(comisiones);
-
       // Obtener token de autenticación
       final token = await authService.getAccessToken();
       
@@ -81,11 +106,67 @@ class ExcelGraphService {
         throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
       }
 
-      // Nombre del archivo
-      final fileName = 'Comisiones_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      // Nombre fijo del archivo
+      const fileName = 'Comisiones.xlsx';
       
-      // Subir a OneDrive en la carpeta "Estribado/Comisiones"
-      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/Comisiones/$fileName:/content');
+      // Intentar descargar el archivo existente
+      Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
+      
+      // Obtener o crear la hoja
+      Sheet sheet;
+      if (excel.tables.containsKey('Comisiones')) {
+        sheet = excel['Comisiones'];
+        // Limpiar datos existentes pero mantener headers
+        sheet.clear();
+      } else {
+        sheet = excel['Comisiones'];
+      }
+
+      // Headers
+      sheet.appendRow([
+        TextCellValue('N° Operación'),
+        TextCellValue('Fecha'),
+        TextCellValue('Cliente'),
+        TextCellValue('CUIT'),
+        TextCellValue('Producto'),
+        TextCellValue('Tipo'),
+        TextCellValue('Cantidad'),
+        TextCellValue('Precio Unit.'),
+        TextCellValue('Subtotal'),
+        TextCellValue('IVA %'),
+        TextCellValue('Monto IVA'),
+        TextCellValue('Total'),
+        TextCellValue('Comisión %'),
+        TextCellValue('Valor Comisión'),
+        TextCellValue('Estado'),
+      ]);
+
+      // Data rows - agregar todas las comisiones
+      for (var comision in comisiones) {
+        sheet.appendRow([
+          IntCellValue(comision.numeroOperacion ?? 0),
+          TextCellValue(comision.fecha.toString().split(' ')[0]),
+          TextCellValue(comision.clienteNombre),
+          TextCellValue(comision.clienteCuit),
+          TextCellValue(comision.productoNombre),
+          TextCellValue(comision.tipoProducto),
+          DoubleCellValue(comision.cantidad),
+          DoubleCellValue(comision.precioUnitario),
+          DoubleCellValue(comision.subtotalNeto),
+          DoubleCellValue(comision.porcentajeIva),
+          DoubleCellValue(comision.montoIva),
+          DoubleCellValue(comision.totalConImpuestos),
+          DoubleCellValue(comision.porcentajeComision),
+          DoubleCellValue(comision.valorComision),
+          TextCellValue(comision.estado),
+        ]);
+      }
+
+      // Codificar el archivo
+      final fileBytes = excel.encode()!;
+      
+      // Subir a OneDrive (sobreescribe el archivo existente)
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/$fileName:/content');
       
       final response = await http.put(
         url,
@@ -93,13 +174,12 @@ class ExcelGraphService {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         },
-        body: await file.readAsBytes(),
+        body: fileBytes,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ Excel subido exitosamente a OneDrive: Estribado/Comisiones/$fileName');
-        // Eliminar archivo local después de subir
-        await file.delete();
+        print('✅ Excel actualizado exitosamente en OneDrive: Estribado/$fileName');
+        print('📊 Total de comisiones: ${comisiones.length}');
       } else {
         print('❌ Error al subir a OneDrive: ${response.statusCode}');
         print('Respuesta: ${response.body}');
@@ -161,12 +241,9 @@ class ExcelGraphService {
     return file;
   }
 
-  /// Sube recetas a Excel
+  /// Actualiza el archivo Excel con las recetas en OneDrive
   Future<void> uploadRecetasToExcel(List<Receta> recetas) async {
     try {
-      // Generar archivo Excel
-      final file = await generateRecetasExcelFile(recetas);
-
       // Obtener token de autenticación
       final token = await authService.getAccessToken();
       
@@ -174,11 +251,62 @@ class ExcelGraphService {
         throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
       }
 
-      // Nombre del archivo
-      final fileName = 'Recetas_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      // Nombre fijo del archivo
+      const fileName = 'Recetas.xlsx';
       
-      // Subir a OneDrive en la carpeta "Estribado/Recetario"
-      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/Recetario/$fileName:/content');
+      // Intentar descargar el archivo existente
+      Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
+      
+      // Obtener o crear la hoja
+      Sheet sheet;
+      if (excel.tables.containsKey('Recetas')) {
+        sheet = excel['Recetas'];
+        // Limpiar datos existentes pero mantener estructura
+        sheet.clear();
+      } else {
+        sheet = excel['Recetas'];
+      }
+
+      // Headers
+      sheet.appendRow([
+        TextCellValue('N° Receta'),
+        TextCellValue('Fecha'),
+        TextCellValue('Cliente'),
+        TextCellValue('Establecimiento'),
+        TextCellValue('Contratista'),
+        TextCellValue('Hectáreas'),
+        TextCellValue('Lote'),
+        TextCellValue('Cultivo'),
+        TextCellValue('Productos'),
+        TextCellValue('Observaciones'),
+      ]);
+
+      // Data rows - agregar todas las recetas
+      for (var receta in recetas) {
+        // Concatenar productos
+        final productosStr = receta.productos
+            .map((p) => '${p.nombre} (${p.dosisPorHa} ${p.unidad}/Ha → ${p.total} ${p.unidadTotal})')
+            .join('; ');
+
+        sheet.appendRow([
+          IntCellValue(receta.numeroReceta ?? 0),
+          TextCellValue(receta.fecha.toString().split(' ')[0]),
+          TextCellValue(receta.cliente),
+          TextCellValue(receta.establecimiento),
+          TextCellValue(receta.contratista),
+          DoubleCellValue(receta.cantidadHas),
+          TextCellValue(receta.lote),
+          TextCellValue(receta.cultivo),
+          TextCellValue(productosStr),
+          TextCellValue(receta.observaciones),
+        ]);
+      }
+
+      // Codificar el archivo
+      final fileBytes = excel.encode()!;
+      
+      // Subir a OneDrive (sobreescribe el archivo existente)
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/$fileName:/content');
       
       final response = await http.put(
         url,
@@ -186,13 +314,12 @@ class ExcelGraphService {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         },
-        body: await file.readAsBytes(),
+        body: fileBytes,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ Excel de recetas subido exitosamente a OneDrive: Estribado/Recetario/$fileName');
-        // Eliminar archivo local después de subir
-        await file.delete();
+        print('✅ Excel de recetas actualizado exitosamente en OneDrive: Estribado/$fileName');
+        print('📊 Total de recetas: ${recetas.length}');
       } else {
         print('❌ Error al subir recetas a OneDrive: ${response.statusCode}');
         print('Respuesta: ${response.body}');
