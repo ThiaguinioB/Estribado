@@ -68,12 +68,6 @@ class _RecetaScreenState extends State<RecetaScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.numeroRecetaEditar == null ? 'Nueva Receta' : 'Editar Receta'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _guardarReceta,
-          ),
-        ],
       ),
       body: Consumer<RecetarioFormProvider>(
         builder: (context, provider, _) {
@@ -163,6 +157,61 @@ class _RecetaScreenState extends State<RecetaScreen> {
                   maxLines: 4,
                   onChanged: provider.setObservaciones,
                 ),
+                const SizedBox(height: 32),
+
+                // Botones de acción
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: ElevatedButton.icon(
+                        onPressed: _guardarReceta,
+                        icon: const Icon(Icons.save),
+                        label: const Text('Guardar'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 5,
+                      child: ElevatedButton(
+                        onPressed: _guardarYCompartir,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.share, size: 20),
+                            SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'Guardar y Compartir',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           );
@@ -511,6 +560,105 @@ class _RecetaScreenState extends State<RecetaScreen> {
           const SnackBar(content: Text('Receta guardada exitosamente')),
         );
         Navigator.pop(context);
+      }
+    }
+  }
+
+  void _guardarYCompartir() async {
+    if (_formKey.currentState!.validate()) {
+      final provider = context.read<RecetarioFormProvider>();
+      final error = provider.validarFormulario();
+
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: Colors.red),
+        );
+        return;
+      }
+
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Guardando y generando PDF...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      try {
+        // Guardar receta
+        bool exito;
+        if (widget.numeroRecetaEditar == null) {
+          exito = await provider.guardarReceta();
+        } else {
+          exito = await provider.actualizarReceta(widget.numeroRecetaEditar!);
+        }
+
+        if (!exito) {
+          if (mounted) {
+            Navigator.pop(context); // Cerrar loading
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error al guardar la receta'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Obtener la receta guardada para compartir
+        final recetas = provider.recetas;
+        if (recetas.isEmpty) {
+          if (mounted) {
+            Navigator.pop(context); // Cerrar loading
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error al obtener la receta guardada'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        final recetaGuardada = recetas.first; // La más reciente
+
+        // Compartir PDF
+        await provider.compartirPdf(recetaGuardada);
+
+        if (mounted) {
+          Navigator.pop(context); // Cerrar loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Receta guardada y compartida exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context); // Volver a la lista
+        }
+      } catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // Cerrar loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

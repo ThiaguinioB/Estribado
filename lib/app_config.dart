@@ -1,13 +1,23 @@
 /// Configuración global de la aplicación
 class AppConfig {
   // Microsoft Azure AD Config
-  static const String microsoftClientId = 'YOUR_CLIENT_ID_HERE';
-  static const String microsoftTenantId = 'YOUR_TENANT_ID_HERE';
+  // Tu Client ID actual de Azure
+  static const String microsoftClientId = 'c44b4083-3bb0-49c1-b47d-974e53cbdf3c';
+  
+  // IMPORTANTE: Usa 'common' para permitir:
+  // - Cuentas personales de Microsoft (@outlook.com, @hotmail.com, @live.com)
+  // - Cuentas organizacionales de Azure AD
+  static const String microsoftTenantId = 'common';
+  
+  // URI de redirección - debe coincidir con lo configurado en Azure Portal
   static const String microsoftRedirectUri = 'msauth://com.estribado.app/callback';
   
   // Microsoft Graph API Endpoints
   static const String graphApiUrl = 'https://graph.microsoft.com/v1.0';
-  static const String graphApiScopes = 'Files.ReadWrite offline_access User.Read';
+  
+  // Scopes necesarios para Microsoft Graph
+  // IMPORTANTE: NO uses .default, usa los scopes específicos
+  static const String graphApiScopes = 'https://graph.microsoft.com/Files.ReadWrite https://graph.microsoft.com/User.Read offline_access';
   
   // App Settings
   static const String appName = 'Estribado';

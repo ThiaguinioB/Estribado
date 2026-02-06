@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/widgets/feature_card.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -104,6 +106,14 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   // Tarjeta de bienvenida
                   const _WelcomeCard(),
+                  const SizedBox(height: 16),
+
+                  // Card de conexión con Microsoft
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, _) {
+                      return _MicrosoftConnectionCard(authProvider: authProvider);
+                    },
+                  ),
                   const SizedBox(height: 24),
 
                   // Título de sección
@@ -357,6 +367,143 @@ class _QuickActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         elevation: 3,
+      ),
+    );
+  }
+}
+
+class _MicrosoftConnectionCard extends StatelessWidget {
+  final AuthProvider authProvider;
+
+  const _MicrosoftConnectionCard({required this.authProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    final isConnected = authProvider.isLoggedIn;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isConnected
+                ? [Colors.green.shade600, Colors.green.shade400]
+                : [Colors.blue.shade700, Colors.blue.shade500],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              if (isConnected) {
+                _showDisconnectDialog(context);
+              } else {
+                context.push('/login');
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isConnected ? Icons.cloud_done : Icons.cloud_off,
+                      size: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isConnected ? 'Conectado a Microsoft' : 'Sin conexión',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isConnected
+                              ? 'Sincronización con Excel activa'
+                              : 'Toca para conectar con OneDrive',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    isConnected ? Icons.settings : Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDisconnectDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.cloud_off, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Desconectar cuenta'),
+          ],
+        ),
+        content: const Text(
+          '¿Deseas desconectar tu cuenta de Microsoft?\n\n'
+          'Podrás seguir usando la app, pero los datos no se sincronizarán con Excel.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await authProvider.logout();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cuenta desconectada'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Desconectar'),
+          ),
+        ],
       ),
     );
   }
