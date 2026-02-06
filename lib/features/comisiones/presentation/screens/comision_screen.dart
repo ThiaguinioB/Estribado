@@ -171,7 +171,7 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
           ),
           
           // Campo para IVA personalizado
-          if (_ivaSeleccionado == 'otro') ..[
+          if (_ivaSeleccionado == 'otro') ...[
             const SizedBox(height: 12),
             TextFormField(
               controller: _ivaOtroController,
