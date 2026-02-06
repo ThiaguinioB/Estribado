@@ -112,15 +112,13 @@ class ExcelGraphService {
       // Intentar descargar el archivo existente
       Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
       
-      // Obtener o crear la hoja
-      Sheet sheet;
+      // Eliminar la hoja si existe y crear una nueva
       if (excel.tables.containsKey('Comisiones')) {
-        sheet = excel['Comisiones'];
-        // Limpiar datos existentes pero mantener headers
-        sheet.clear();
-      } else {
-        sheet = excel['Comisiones'];
+        excel.delete('Comisiones');
       }
+      
+      // Crear la hoja
+      Sheet sheet = excel['Comisiones'];
 
       // Headers
       sheet.appendRow([
@@ -257,15 +255,13 @@ class ExcelGraphService {
       // Intentar descargar el archivo existente
       Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
       
-      // Obtener o crear la hoja
-      Sheet sheet;
+      // Eliminar la hoja si existe y crear una nueva
       if (excel.tables.containsKey('Recetas')) {
-        sheet = excel['Recetas'];
-        // Limpiar datos existentes pero mantener estructura
-        sheet.clear();
-      } else {
-        sheet = excel['Recetas'];
+        excel.delete('Recetas');
       }
+      
+      // Crear la hoja
+      Sheet sheet = excel['Recetas'];
 
       // Headers
       sheet.appendRow([
