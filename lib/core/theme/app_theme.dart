@@ -17,11 +17,8 @@ class AppTheme {
       backgroundColor: primaryGreen,
       foregroundColor: Colors.white,
     ),
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

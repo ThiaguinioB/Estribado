@@ -1,15 +1,18 @@
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:aad_oauth/model/config.dart';
+import 'package:flutter/material.dart';
 import '../../app_config.dart';
 
 /// Servicio de autenticación con Microsoft Azure AD
 class MicrosoftAuthService {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  
   static final Config _config = Config(
     tenant: AppConfig.microsoftTenantId,
     clientId: AppConfig.microsoftClientId,
     scope: AppConfig.graphApiScopes,
     redirectUri: AppConfig.microsoftRedirectUri,
-    navigatorKey: null, // Se puede agregar una GlobalKey<NavigatorState>
+    navigatorKey: navigatorKey,
   );
 
   final AadOAuth _oauth = AadOAuth(_config);

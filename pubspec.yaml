@@ -20,7 +20,7 @@ dependencies:
   equatable: ^2.0.5
   
   # Microsoft Graph API
-  aad_oauth: ^0.5.0
+  aad_oauth: ^1.0.1
   http: ^1.2.0
   
   # PDF Generation
@@ -32,7 +32,8 @@ dependencies:
   
   # File handling
   path_provider: ^2.1.2
-  file_picker: ^6.1.1
+  file_picker: ^8.0.0
+  share_plus: ^10.0.0
   
   # Local Storage
   shared_preferences: ^2.2.2
@@ -49,3 +50,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.jpg
