@@ -189,12 +189,12 @@ class ExcelGraphService {
     }
   }
 
-  /// Genera un archivo Excel con las recetas
+  /// Genera un archivo Excel con las recetas (deprecado - solo para compatibilidad)
   Future<File> generateRecetasExcelFile(List<Receta> recetas) async {
     final excel = Excel.createExcel();
     final sheet = excel['Recetas'];
 
-    // Headers
+    // Headers - con columnas separadas para productos
     sheet.appendRow([
       TextCellValue('N° Receta'),
       TextCellValue('Fecha'),
@@ -204,29 +204,55 @@ class ExcelGraphService {
       TextCellValue('Hectáreas'),
       TextCellValue('Lote'),
       TextCellValue('Cultivo'),
-      TextCellValue('Productos'),
+      TextCellValue('Nombre comercial o principio activo'),
+      TextCellValue('Dosis/Ha'),
+      TextCellValue('Unidad'),
+      TextCellValue('Total'),
+      TextCellValue('Unidad Total'),
       TextCellValue('Observaciones'),
     ]);
 
-    // Data rows
+    // Data rows - una fila por cada producto
     for (var receta in recetas) {
-      // Concatenar productos
-      final productosStr = receta.productos
-          .map((p) => '${p.nombre} (${p.dosisPorHa} ${p.unidad}/Ha → ${p.total} ${p.unidadTotal})')
-          .join('; ');
-
-      sheet.appendRow([
-        IntCellValue(receta.numeroReceta ?? 0),
-        TextCellValue(receta.fecha.toString().split(' ')[0]),
-        TextCellValue(receta.cliente),
-        TextCellValue(receta.establecimiento),
-        TextCellValue(receta.contratista),
-        DoubleCellValue(receta.cantidadHas),
-        TextCellValue(receta.lote),
-        TextCellValue(receta.cultivo),
-        TextCellValue(productosStr),
-        TextCellValue(receta.observaciones),
-      ]);
+      if (receta.productos.isEmpty) {
+        // Si no hay productos, crear una fila con los datos de la receta
+        sheet.appendRow([
+          IntCellValue(receta.numeroReceta ?? 0),
+          TextCellValue(receta.fecha.toString().split(' ')[0]),
+          TextCellValue(receta.cliente),
+          TextCellValue(receta.establecimiento),
+          TextCellValue(receta.contratista),
+          DoubleCellValue(receta.cantidadHas),
+          TextCellValue(receta.lote),
+          TextCellValue(receta.cultivo),
+          TextCellValue(''),
+          TextCellValue(''),
+          TextCellValue(''),
+          TextCellValue(''),
+          TextCellValue(''),
+          TextCellValue(receta.observaciones),
+        ]);
+      } else {
+        // Una fila por cada producto, repitiendo los datos de la receta
+        for (var producto in receta.productos) {
+          sheet.appendRow([
+            IntCellValue(receta.numeroReceta ?? 0),
+            TextCellValue(receta.fecha.toString().split(' ')[0]),
+            TextCellValue(receta.cliente),
+            TextCellValue(receta.establecimiento),
+            TextCellValue(receta.contratista),
+            DoubleCellValue(receta.cantidadHas),
+            TextCellValue(receta.lote),
+            TextCellValue(receta.cultivo),
+            TextCellValue(producto.nombre),
+            DoubleCellValue(producto.dosisPorHa),
+            TextCellValue(producto.unidad),
+            DoubleCellValue(producto.total),
+            TextCellValue(producto.unidadTotal),
+            TextCellValue(receta.observaciones),
+          ]);
+        }
+      }
     }
 
     // Guardar archivo localmente
@@ -263,7 +289,7 @@ class ExcelGraphService {
       // Crear la hoja
       Sheet sheet = excel['Recetas'];
 
-      // Headers
+      // Headers - con columnas separadas para productos
       sheet.appendRow([
         TextCellValue('N° Receta'),
         TextCellValue('Fecha'),
@@ -273,29 +299,55 @@ class ExcelGraphService {
         TextCellValue('Hectáreas'),
         TextCellValue('Lote'),
         TextCellValue('Cultivo'),
-        TextCellValue('Productos'),
+        TextCellValue('Nombre comercial o principio activo'),
+        TextCellValue('Dosis/Ha'),
+        TextCellValue('Unidad'),
+        TextCellValue('Total'),
+        TextCellValue('Unidad Total'),
         TextCellValue('Observaciones'),
       ]);
 
-      // Data rows - agregar todas las recetas
+      // Data rows - una fila por cada producto
       for (var receta in recetas) {
-        // Concatenar productos
-        final productosStr = receta.productos
-            .map((p) => '${p.nombre} (${p.dosisPorHa} ${p.unidad}/Ha → ${p.total} ${p.unidadTotal})')
-            .join('; ');
-
-        sheet.appendRow([
-          IntCellValue(receta.numeroReceta ?? 0),
-          TextCellValue(receta.fecha.toString().split(' ')[0]),
-          TextCellValue(receta.cliente),
-          TextCellValue(receta.establecimiento),
-          TextCellValue(receta.contratista),
-          DoubleCellValue(receta.cantidadHas),
-          TextCellValue(receta.lote),
-          TextCellValue(receta.cultivo),
-          TextCellValue(productosStr),
-          TextCellValue(receta.observaciones),
-        ]);
+        if (receta.productos.isEmpty) {
+          // Si no hay productos, crear una fila con los datos de la receta
+          sheet.appendRow([
+            IntCellValue(receta.numeroReceta ?? 0),
+            TextCellValue(receta.fecha.toString().split(' ')[0]),
+            TextCellValue(receta.cliente),
+            TextCellValue(receta.establecimiento),
+            TextCellValue(receta.contratista),
+            DoubleCellValue(receta.cantidadHas),
+            TextCellValue(receta.lote),
+            TextCellValue(receta.cultivo),
+            TextCellValue(''),
+            TextCellValue(''),
+            TextCellValue(''),
+            TextCellValue(''),
+            TextCellValue(''),
+            TextCellValue(receta.observaciones),
+          ]);
+        } else {
+          // Una fila por cada producto, repitiendo los datos de la receta
+          for (var producto in receta.productos) {
+            sheet.appendRow([
+              IntCellValue(receta.numeroReceta ?? 0),
+              TextCellValue(receta.fecha.toString().split(' ')[0]),
+              TextCellValue(receta.cliente),
+              TextCellValue(receta.establecimiento),
+              TextCellValue(receta.contratista),
+              DoubleCellValue(receta.cantidadHas),
+              TextCellValue(receta.lote),
+              TextCellValue(receta.cultivo),
+              TextCellValue(producto.nombre),
+              DoubleCellValue(producto.dosisPorHa),
+              TextCellValue(producto.unidad),
+              DoubleCellValue(producto.total),
+              TextCellValue(producto.unidadTotal),
+              TextCellValue(receta.observaciones),
+            ]);
+          }
+        }
       }
 
       // Codificar el archivo

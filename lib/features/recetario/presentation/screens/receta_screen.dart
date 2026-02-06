@@ -312,6 +312,9 @@ class _RecetaScreenState extends State<RecetaScreen> {
       ),
       keyboardType: keyboardType,
       maxLines: maxLines,
+      textCapitalization: keyboardType == TextInputType.number 
+          ? TextCapitalization.none 
+          : TextCapitalization.sentences,
       onChanged: onChanged,
       validator: validator,
     );
@@ -350,13 +353,14 @@ class _RecetaScreenState extends State<RecetaScreen> {
               ...provider.productos.asMap().entries.map((entry) {
                 final index = entry.key;
                 final producto = entry.value;
+                final totalConvertido = RecetaValidation.obtenerValorConvertido(producto.unidad, producto.total);
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     title: Text(producto.nombre),
                     subtitle: Text(
                       'Dosis: ${producto.dosisPorHa} ${producto.unidad}/Ha\n'
-                      'Total: ${producto.total} ${producto.unidadTotal}',
+                      'Total: ${totalConvertido.toStringAsFixed(2)} ${producto.unidadTotal}',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -426,6 +430,7 @@ class _RecetaScreenState extends State<RecetaScreen> {
                 children: [
                   TextField(
                     controller: nombreController,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Nombre del Producto',
                       border: OutlineInputBorder(),

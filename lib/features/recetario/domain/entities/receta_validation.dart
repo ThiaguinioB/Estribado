@@ -92,15 +92,8 @@ class RecetaValidation {
   ) {
     double total = dosis * hectareas;
     
-    // Conversión automática
-    if (unidad == 'cc' && total >= 1000) {
-      total = total / 1000; // cc → L
-    } else if (unidad == 'g' && total >= 1000) {
-      total = total / 1000; // g → kg
-    } else if (unidad == 'lts' && total >= 1000) {
-      total = total / 1000; // lts → m³ (o mantener en lts)
-    }
-    // kg y unidades no se convierten
+    // NO convertir aquí, solo calcular el total en la unidad original
+    // La conversión se mostrará en la unidad de presentación
     
     // Redondear a 4 decimales
     return double.parse(total.toStringAsFixed(4));
@@ -114,7 +107,7 @@ class RecetaValidation {
     return double.parse(dosis.toStringAsFixed(4));
   }
 
-  /// Obtener unidad después de conversión
+  /// Obtener unidad después de conversión para PRESENTACIÓN solamente
   static String obtenerUnidadConvertida(String unidadOriginal, double total) {
     if (unidadOriginal == 'cc' && total >= 1000) {
       return 'L';
@@ -125,5 +118,15 @@ class RecetaValidation {
     }
     // kg y unidades permanecen sin cambios
     return unidadOriginal;
+  }
+  
+  /// Obtener el valor convertido para PRESENTACIÓN solamente
+  static double obtenerValorConvertido(String unidadOriginal, double total) {
+    if (unidadOriginal == 'cc' && total >= 1000) {
+      return total / 1000; // cc → L
+    } else if (unidadOriginal == 'g' && total >= 1000) {
+      return total / 1000; // g → Kg
+    }
+    return total;
   }
 }
