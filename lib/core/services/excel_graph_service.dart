@@ -1,6 +1,8 @@
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../features/comisiones/domain/entities/comision.dart';
 import '../../features/recetario/domain/entities/receta.dart';
 import 'microsoft_auth_service.dart';
@@ -76,19 +78,35 @@ class ExcelGraphService {
       final token = await authService.getAccessToken();
       
       if (token == null) {
-        throw Exception('No se pudo obtener el token de autenticación');
+        throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
       }
 
-      // TODO: Implementar subida a OneDrive usando Microsoft Graph API
-      // final response = await http.put(
-      //   Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/${file.path}:/content'),
-      //   headers: {'Authorization': 'Bearer $token'},
-      //   body: await file.readAsBytes(),
-      // );
+      // Nombre del archivo
+      final fileName = 'Comisiones_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      
+      // Subir a OneDrive en la carpeta "Estribado/Comisiones"
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/Comisiones/$fileName:/content');
+      
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        body: await file.readAsBytes(),
+      );
 
-      print('Excel generado localmente: ${file.path}');
-      // await file.delete(); // Descomentar después de subir
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Excel subido exitosamente a OneDrive: Estribado/Comisiones/$fileName');
+        // Eliminar archivo local después de subir
+        await file.delete();
+      } else {
+        print('❌ Error al subir a OneDrive: ${response.statusCode}');
+        print('Respuesta: ${response.body}');
+        throw Exception('Error al subir Excel a OneDrive: ${response.statusCode} - ${response.body}');
+      }
     } catch (e) {
+      print('❌ Error al generar/subir Excel: $e');
       throw Exception('Error al generar/subir Excel: $e');
     }
   }
@@ -153,13 +171,35 @@ class ExcelGraphService {
       final token = await authService.getAccessToken();
       
       if (token == null) {
-        throw Exception('No se pudo obtener el token de autenticación');
+        throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
       }
 
-      // TODO: Implementar subida a OneDrive usando Microsoft Graph API
-      print('Excel de recetas generado localmente: ${file.path}');
-      // await file.delete(); // Descomentar después de subir
+      // Nombre del archivo
+      final fileName = 'Recetas_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      
+      // Subir a OneDrive en la carpeta "Estribado/Recetario"
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/Recetario/$fileName:/content');
+      
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        body: await file.readAsBytes(),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Excel de recetas subido exitosamente a OneDrive: Estribado/Recetario/$fileName');
+        // Eliminar archivo local después de subir
+        await file.delete();
+      } else {
+        print('❌ Error al subir recetas a OneDrive: ${response.statusCode}');
+        print('Respuesta: ${response.body}');
+        throw Exception('Error al subir Excel de recetas a OneDrive: ${response.statusCode} - ${response.body}');
+      }
     } catch (e) {
+      print('❌ Error al generar/subir Excel de recetas: $e');
       throw Exception('Error al generar/subir Excel de recetas: $e');
     }
   }
