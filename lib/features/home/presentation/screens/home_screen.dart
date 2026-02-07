@@ -191,62 +191,6 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 32),
-
-                  // Sección de acciones rápidas
-                  const Text(
-                    'Acciones Rápidas',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Botones de acciones rápidas
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      _QuickActionButton(
-                        label: 'Nueva Comisión',
-                        icon: Icons.add_circle,
-                        color: Colors.green,
-                        onTap: () => context.push('/comisiones/nueva'),
-                      ),
-                      _QuickActionButton(
-                        label: 'Ver Todas',
-                        icon: Icons.list_alt,
-                        color: Colors.blue,
-                        onTap: () => context.push('/comisiones'),
-                      ),
-                      _QuickActionButton(
-                        label: 'Exportar Excel',
-                        icon: Icons.upload_file,
-                        color: Colors.teal,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Ir a la lista de comisiones para exportar'),
-                            ),
-                          );
-                        },
-                      ),
-                      _QuickActionButton(
-                        label: 'Configuración',
-                        icon: Icons.settings,
-                        color: Colors.grey,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Configuración próximamente'),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -262,14 +206,19 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hour = DateTime.now().hour;
+    final now = DateTime.now();
+    final hour = now.hour;
+    final minute = now.minute;
     String greeting;
     IconData greetingIcon;
 
-    if (hour < 12) {
+    // Buenos días: 5:40 AM - 11:59 AM
+    // Buenas tardes: 12:00 PM - 5:59 PM
+    // Buenas noches: 6:00 PM - 5:39 AM
+    if ((hour == 5 && minute >= 40) || (hour >= 6 && hour < 12)) {
       greeting = 'Buenos días';
       greetingIcon = Icons.wb_sunny;
-    } else if (hour < 18) {
+    } else if (hour >= 12 && hour < 20) {
       greeting = 'Buenas tardes';
       greetingIcon = Icons.wb_cloudy;
     } else {
@@ -335,38 +284,6 @@ class _WelcomeCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickActionButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 20),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 3,
       ),
     );
   }
