@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../features/comisiones/domain/entities/comision.dart';
 import '../../features/recetario/domain/entities/receta.dart';
+import '../../features/honorarios/domain/entities/honorario.dart';
 import 'microsoft_auth_service.dart';
 
 /// Servicio para generar archivos Excel y subirlos a Microsoft OneDrive
@@ -376,6 +377,107 @@ class ExcelGraphService {
     } catch (e) {
       print('❌ Error al generar/subir Excel de recetas: $e');
       throw Exception('Error al generar/subir Excel de recetas: $e');
+    }
+  }
+
+  /// Actualiza el archivo Excel con los honorarios en OneDrive
+  Future<void> uploadHonorariosToExcel(List<Honorario> honorarios) async {
+    try {
+      // Obtener token de autenticación
+      final token = await authService.getAccessToken();
+      
+      if (token == null) {
+        throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
+      }
+
+      // Nombre fijo del archivo
+      const fileName = 'Honorarios.xlsx';
+      
+      // Intentar descargar el archivo existente
+      Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
+      
+      // Eliminar la hoja si existe y crear una nueva
+      if (excel.tables.containsKey('Honorarios')) {
+        excel.delete('Honorarios');
+      }
+      
+      // Crear la hoja
+      Sheet sheet = excel['Honorarios'];
+
+      // Headers
+      sheet.appendRow([
+        TextCellValue('N° Operación'),
+        TextCellValue('Fecha'),
+        TextCellValue('Cliente'),
+        TextCellValue('Nro. Receta'),
+        TextCellValue('Km. Recorridos'),
+        TextCellValue('Costo/Km'),
+        TextCellValue('Moneda Km'),
+        TextCellValue('Subtotal Km'),
+        TextCellValue('Horas Técnicas'),
+        TextCellValue('Costo/Hora'),
+        TextCellValue('Moneda Hora'),
+        TextCellValue('Subtotal Hora'),
+        TextCellValue('Plus Técnico'),
+        TextCellValue('Descripción Plus'),
+        TextCellValue('Moneda Plus'),
+        TextCellValue('Total Honorario (por moneda)'),
+        TextCellValue('Descripción Tarea'),
+        TextCellValue('Estado'),
+      ]);
+
+      // Data rows
+      for (var honorario in honorarios) {
+        sheet.appendRow([
+          IntCellValue(honorario.numeroOperacion ?? 0),
+          TextCellValue(honorario.fecha.toString().split(' ')[0]),
+          TextCellValue(honorario.clienteNombre),
+          honorario.numeroReceta != null 
+              ? IntCellValue(honorario.numeroReceta!) 
+              : TextCellValue(''),
+          DoubleCellValue(honorario.kmRecorridos),
+          DoubleCellValue(honorario.costoKm),
+          TextCellValue(honorario.monedaKm),
+          DoubleCellValue(honorario.subtotalKm),
+          DoubleCellValue(honorario.horaTecnica),
+          DoubleCellValue(honorario.costoHora),
+          TextCellValue(honorario.monedaHora),
+          DoubleCellValue(honorario.subtotalHora),
+          DoubleCellValue(honorario.plusTecnico),
+          TextCellValue(honorario.descripcionPlus),
+          TextCellValue(honorario.monedaPlus),
+          TextCellValue(honorario.totalFormateado),
+          TextCellValue(honorario.descripcionTarea),
+          TextCellValue(honorario.estado),
+        ]);
+      }
+
+      // Codificar el archivo
+      final fileBytes = excel.encode()!;
+      
+      // Subir a OneDrive (sobreescribe el archivo existente)
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/$fileName:/content');
+      
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        body: fileBytes,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Excel de honorarios actualizado exitosamente en OneDrive: Estribado/$fileName');
+        print('📊 Total de honorarios: ${honorarios.length}');
+      } else {
+        print('❌ Error al subir honorarios a OneDrive: ${response.statusCode}');
+        print('Respuesta: ${response.body}');
+        throw Exception('Error al subir Excel de honorarios a OneDrive: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error al generar/subir Excel de honorarios: $e');
+      throw Exception('Error al generar/subir Excel de honorarios: $e');
     }
   }
 }

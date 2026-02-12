@@ -3,8 +3,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../../features/comisiones/domain/entities/comision.dart';
+import '../../features/honorarios/domain/entities/honorario.dart';
 
-/// Servicio para generar archivos PDF de comisiones
+/// Servicio para generar archivos PDF de comisiones y honorarios
 class PdfGeneratorService {
   
   Future<void> generateComisionPdf(Comision comision) async {
@@ -74,6 +75,122 @@ class PdfGeneratorService {
               ),
               child: pw.Text('Estado: ${comision.estado}'),
             ),
+
+            pw.Spacer(),
+
+            // Footer
+            pw.Divider(),
+            pw.Text(
+              'Documento generado por Estribado - Software Agropecuario',
+              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Mostrar preview y permitir compartir/imprimir
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+    );
+  }
+
+  Future<void> generateHonorarioPdf(Honorario honorario) async {
+    final pdf = pw.Document();
+    final dateFormat = DateFormat('dd/MM/yyyy');
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            // Header
+            pw.Header(
+              level: 0,
+              child: pw.Text(
+                'HONORARIOS PROFESIONALES',
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+
+            // Información general
+            pw.Text('DATOS GENERALES', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            _buildInfoRow('Cliente:', honorario.clienteNombre),
+            _buildInfoRow('Fecha:', dateFormat.format(honorario.fecha)),
+            if (honorario.numeroOperacion != null)
+              _buildInfoRow('N° Operación:', honorario.numeroOperacion.toString()),
+            if (honorario.numeroReceta != null)
+              _buildInfoRow('Nro. de Receta:', honorario.numeroReceta.toString()),
+            pw.SizedBox(height: 20),
+
+            // Detalle de costos
+            pw.Text('DETALLE DE COSTOS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            // Km Recorridos
+            _buildInfoRow('Km. Recorridos:', '${honorario.kmRecorridos.toStringAsFixed(1)} km'),
+            if (honorario.costoKm > 0) ...[
+              _buildInfoRow(
+                'Costo por Km (${honorario.monedaKm}):',
+                '${Honorario.simboloMoneda(honorario.monedaKm)} ${honorario.costoKm.toStringAsFixed(2)}',
+              ),
+              _buildInfoRow(
+                'Subtotal Km:',
+                '${Honorario.simboloMoneda(honorario.monedaKm)} ${honorario.subtotalKm.toStringAsFixed(2)}',
+                isBold: true,
+              ),
+            ],
+            pw.SizedBox(height: 8),
+            // Hora Técnica
+            _buildInfoRow('Hora Técnica:', '${honorario.horaTecnica.toStringAsFixed(1)} hs'),
+            if (honorario.costoHora > 0) ...[
+              _buildInfoRow(
+                'Costo por Hora (${honorario.monedaHora}):',
+                '${Honorario.simboloMoneda(honorario.monedaHora)} ${honorario.costoHora.toStringAsFixed(2)}',
+              ),
+              _buildInfoRow(
+                'Subtotal Horas:',
+                '${Honorario.simboloMoneda(honorario.monedaHora)} ${honorario.subtotalHora.toStringAsFixed(2)}',
+                isBold: true,
+              ),
+            ],
+            pw.SizedBox(height: 8),
+            // Plus Técnico
+            if (honorario.plusTecnico > 0) ...[
+              _buildInfoRow(
+                'Plus Técnico (${honorario.monedaPlus}):',
+                '${Honorario.simboloMoneda(honorario.monedaPlus)} ${honorario.plusTecnico.toStringAsFixed(2)}',
+              ),
+              if (honorario.descripcionPlus.isNotEmpty)
+                _buildInfoRow('Descripción Plus:', honorario.descripcionPlus),
+            ],
+            pw.SizedBox(height: 10),
+            _buildInfoRow(
+              'TOTAL HONORARIO:',
+              honorario.totalFormateado,
+              isBold: true,
+              color: PdfColors.green,
+            ),
+            pw.SizedBox(height: 20),
+
+            // Descripción
+            pw.Text('DESCRIPCIÓN DE LA TAREA', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey),
+                borderRadius: pw.BorderRadius.circular(5),
+              ),
+              child: pw.Text(
+                honorario.descripcionTarea.isNotEmpty
+                    ? honorario.descripcionTarea
+                    : 'Sin descripción',
+              ),
+            ),
+            pw.SizedBox(height: 20),
 
             pw.Spacer(),
 

@@ -162,15 +162,7 @@ class HomeScreen extends StatelessWidget {
                         subtitle: 'Honorarios profesionales',
                         icon: Icons.business_center,
                         color: Colors.blue,
-                        isAvailable: false,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Módulo en desarrollo'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+                        onTap: () => context.push('/honorarios'),
                       ),
                       FeatureCard(
                         title: 'Maquinaria',
@@ -214,7 +206,7 @@ class _WelcomeCard extends StatelessWidget {
 
     // Buenos días: 5:40 AM - 11:59 AM
     // Buenas tardes: 12:00 PM - 5:59 PM
-    // Buenas noches: 6:00 PM - 5:39 AM
+    // Buenas noches: 8:00 PM - 5:39 AM
     if ((hour == 5 && minute >= 40) || (hour >= 6 && hour < 12)) {
       greeting = 'Buenos días';
       greetingIcon = Icons.wb_sunny;

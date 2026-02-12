@@ -5,6 +5,8 @@ import '../../features/comisiones/presentation/screens/comision_screen.dart';
 import '../../features/comisiones/presentation/screens/comision_list_screen.dart';
 import '../../features/recetario/presentation/screens/receta_screen.dart';
 import '../../features/recetario/presentation/screens/receta_list_screen.dart';
+import '../../features/honorarios/presentation/screens/honorario_screen.dart';
+import '../../features/honorarios/presentation/screens/honorario_list_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../services/microsoft_auth_service.dart';
 
@@ -59,6 +61,25 @@ class AppRouter {
         builder: (context, state) {
           final numeroReceta = int.tryParse(state.pathParameters['numeroReceta'] ?? '');
           return RecetaScreen(numeroRecetaEditar: numeroReceta);
+        },
+      ),
+      // HONORARIOS
+      GoRoute(
+        path: '/honorarios',
+        name: 'honorarios',
+        builder: (context, state) => const HonorarioListScreen(),
+      ),
+      GoRoute(
+        path: '/honorarios/nuevo',
+        name: 'nuevo-honorario',
+        builder: (context, state) => const HonorarioScreen(),
+      ),
+      GoRoute(
+        path: '/honorarios/editar/:id',
+        name: 'editar-honorario',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          return HonorarioScreen(numeroOperacionEditar: id);
         },
       ),
     ],
