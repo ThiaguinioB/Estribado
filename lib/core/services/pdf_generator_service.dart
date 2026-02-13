@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../../features/comisiones/domain/entities/comision.dart';
 import '../../features/honorarios/domain/entities/honorario.dart';
+import '../../features/maquinaria/domain/entities/maquinaria.dart';
 
 /// Servicio para generar archivos PDF de comisiones y honorarios
 class PdfGeneratorService {
@@ -191,6 +192,87 @@ class PdfGeneratorService {
               ),
             ),
             pw.SizedBox(height: 20),
+
+            pw.Spacer(),
+
+            // Footer
+            pw.Divider(),
+            pw.Text(
+              'Documento generado por Estribado - Software Agropecuario',
+              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Mostrar preview y permitir compartir/imprimir
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+    );
+  }
+
+  Future<void> generateMaquinariaPdf(Maquinaria maquinaria) async {
+    final pdf = pw.Document();
+    final dateFormat = DateFormat('dd/MM/yyyy');
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            // Header
+            pw.Header(
+              level: 0,
+              child: pw.Text(
+                'SERVICIO DE MAQUINARIA',
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+
+            // Información general
+            pw.Text('DATOS GENERALES', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            _buildInfoRow('Cliente:', maquinaria.clienteNombre),
+            _buildInfoRow('Fecha:', dateFormat.format(maquinaria.fecha)),
+            if (maquinaria.numeroOperacion != null)
+              _buildInfoRow('N° Operación:', maquinaria.numeroOperacion.toString()),
+            _buildInfoRow('Tipo de Servicio:', maquinaria.tipoServicio),
+            pw.SizedBox(height: 20),
+
+            // Detalle del servicio
+            pw.Text('DETALLE DEL SERVICIO', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            _buildInfoRow('Superficie:', '${maquinaria.superficie.toStringAsFixed(2)} ${maquinaria.unidadSuperficie}'),
+            if (maquinaria.costoPorUnidad > 0) ...[
+              _buildInfoRow(
+                'Costo por ${maquinaria.unidadSuperficie}:',
+                '${Maquinaria.simboloUnidadCosto(maquinaria.unidadCosto)} ${maquinaria.costoPorUnidad.toStringAsFixed(2)}',
+              ),
+              _buildInfoRow(
+                'TOTAL:',
+                maquinaria.totalFormateado,
+                isBold: true,
+                color: PdfColors.green,
+              ),
+            ],
+            pw.SizedBox(height: 20),
+
+            // Observaciones
+            if (maquinaria.descripcion.isNotEmpty) ...[
+              pw.Text('OBSERVACIONES', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey),
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Text(maquinaria.descripcion),
+              ),
+            ],
 
             pw.Spacer(),
 

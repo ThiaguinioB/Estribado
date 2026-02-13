@@ -7,6 +7,8 @@ import '../../features/recetario/presentation/screens/receta_screen.dart';
 import '../../features/recetario/presentation/screens/receta_list_screen.dart';
 import '../../features/honorarios/presentation/screens/honorario_screen.dart';
 import '../../features/honorarios/presentation/screens/honorario_list_screen.dart';
+import '../../features/maquinaria/presentation/screens/maquinaria_screen.dart';
+import '../../features/maquinaria/presentation/screens/maquinaria_list_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../services/microsoft_auth_service.dart';
 
@@ -80,6 +82,25 @@ class AppRouter {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           return HonorarioScreen(numeroOperacionEditar: id);
+        },
+      ),
+      // MAQUINARIA
+      GoRoute(
+        path: '/maquinaria',
+        name: 'maquinaria',
+        builder: (context, state) => const MaquinariaListScreen(),
+      ),
+      GoRoute(
+        path: '/maquinaria/nueva',
+        name: 'nueva-maquinaria',
+        builder: (context, state) => const MaquinariaScreen(),
+      ),
+      GoRoute(
+        path: '/maquinaria/editar/:id',
+        name: 'editar-maquinaria',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          return MaquinariaScreen(numeroOperacionEditar: id);
         },
       ),
     ],

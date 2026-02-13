@@ -169,15 +169,7 @@ class HomeScreen extends StatelessWidget {
                         subtitle: 'Maquinaria agrícola',
                         icon: Icons.agriculture,
                         color: Colors.orange,
-                        isAvailable: false,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Módulo en desarrollo'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+                        onTap: () => context.push('/maquinaria'),
                       ),
                     ],
                   ),

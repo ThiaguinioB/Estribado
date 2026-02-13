@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../../features/comisiones/domain/entities/comision.dart';
 import '../../features/recetario/domain/entities/receta.dart';
 import '../../features/honorarios/domain/entities/honorario.dart';
+import '../../features/maquinaria/domain/entities/maquinaria.dart';
 import 'microsoft_auth_service.dart';
 
 /// Servicio para generar archivos Excel y subirlos a Microsoft OneDrive
@@ -478,6 +479,89 @@ class ExcelGraphService {
     } catch (e) {
       print('❌ Error al generar/subir Excel de honorarios: $e');
       throw Exception('Error al generar/subir Excel de honorarios: $e');
+    }
+  }
+
+  /// Actualiza el archivo Excel con las maquinarias en OneDrive
+  Future<void> uploadMaquinariasToExcel(List<Maquinaria> maquinarias) async {
+    try {
+      // Obtener token de autenticación
+      final token = await authService.getAccessToken();
+      
+      if (token == null) {
+        throw Exception('No se pudo obtener el token de autenticación. Por favor, inicie sesión en Microsoft.');
+      }
+
+      // Nombre fijo del archivo
+      const fileName = 'Maquinaria.xlsx';
+      
+      // Intentar descargar el archivo existente
+      Excel excel = await _downloadExistingExcel(token, fileName) ?? Excel.createExcel();
+      
+      // Eliminar la hoja si existe y crear una nueva
+      if (excel.tables.containsKey('Maquinaria')) {
+        excel.delete('Maquinaria');
+      }
+      
+      // Crear la hoja
+      Sheet sheet = excel['Maquinaria'];
+
+      // Headers
+      sheet.appendRow([
+        TextCellValue('N° Operación'),
+        TextCellValue('Fecha'),
+        TextCellValue('Cliente'),
+        TextCellValue('Tipo de Servicio'),
+        TextCellValue('Superficie'),
+        TextCellValue('Unidad Superficie'),
+        TextCellValue('Costo por Unidad'),
+        TextCellValue('Unidad Costo'),
+        TextCellValue('Total'),
+        TextCellValue('Observaciones'),
+      ]);
+
+      // Data rows
+      for (var maquinaria in maquinarias) {
+        sheet.appendRow([
+          IntCellValue(maquinaria.numeroOperacion ?? 0),
+          TextCellValue(maquinaria.fecha.toString().split(' ')[0]),
+          TextCellValue(maquinaria.clienteNombre),
+          TextCellValue(maquinaria.tipoServicio),
+          DoubleCellValue(maquinaria.superficie),
+          TextCellValue(maquinaria.unidadSuperficie),
+          DoubleCellValue(maquinaria.costoPorUnidad),
+          TextCellValue(maquinaria.unidadCosto),
+          TextCellValue(maquinaria.totalFormateado),
+          TextCellValue(maquinaria.descripcion),
+        ]);
+      }
+
+      // Codificar el archivo
+      final fileBytes = excel.encode()!;
+      
+      // Subir a OneDrive (sobreescribe el archivo existente)
+      final url = Uri.parse('https://graph.microsoft.com/v1.0/me/drive/root:/Estribado/$fileName:/content');
+      
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        body: fileBytes,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Excel de maquinaria actualizado exitosamente en OneDrive: Estribado/$fileName');
+        print('📊 Total de maquinarias: ${maquinarias.length}');
+      } else {
+        print('❌ Error al subir maquinaria a OneDrive: ${response.statusCode}');
+        print('Respuesta: ${response.body}');
+        throw Exception('Error al subir Excel de maquinaria a OneDrive: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error al generar/subir Excel de maquinaria: $e');
+      throw Exception('Error al generar/subir Excel de maquinaria: $e');
     }
   }
 }
