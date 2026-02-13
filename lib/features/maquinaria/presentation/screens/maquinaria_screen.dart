@@ -306,6 +306,7 @@ class _MaquinariaFormBodyState extends State<_MaquinariaFormBody> {
     return DropdownButtonFormField<String>(
       value: value,
       isDense: true,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: "Unidad",
         contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -328,6 +329,7 @@ class _MaquinariaFormBodyState extends State<_MaquinariaFormBody> {
     return DropdownButtonFormField<String>(
       value: value,
       isDense: true,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: "Unidad",
         contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
