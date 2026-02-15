@@ -95,16 +95,16 @@ class RecetaValidation {
     // NO convertir aquí, solo calcular el total en la unidad original
     // La conversión se mostrará en la unidad de presentación
     
-    // Redondear a 4 decimales
-    return double.parse(total.toStringAsFixed(4));
+    // Redondear a 0 decimales
+    return double.parse(total.toStringAsFixed(0));
   }
 
   /// Calcular dosis desde total
   static double calcularDosisDesdeTot(double total, double hectareas) {
     if (hectareas <= 0) return 0.0;
     double dosis = total / hectareas;
-    // Redondear a 4 decimales
-    return double.parse(dosis.toStringAsFixed(4));
+    // Redondear a 3 decimales
+    return double.parse(dosis.toStringAsFixed(3));
   }
 
   /// Obtener unidad después de conversión para PRESENTACIÓN solamente

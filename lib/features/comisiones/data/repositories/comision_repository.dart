@@ -10,4 +10,5 @@ abstract class ComisionRepository {
   Future<void> deleteComision(int id);
   Future<void> exportToExcel(List<Comision> comisiones);
   Future<void> exportToPdf(Comision comision);
+  Future<void> compartirPdf(Comision comision);
 }

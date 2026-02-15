@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -16,6 +17,14 @@ import 'core/services/excel_graph_service.dart';
 import 'core/services/pdf_generator_service.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Configurar barras del sistema para evitar interferencia con la UI
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarContrastEnforced: false,
+  ));
   runApp(const EstribadoApp());
 }
 
@@ -65,6 +74,9 @@ class EstribadoApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         routerConfig: AppRouter.router,
+        builder: (context, child) {
+          return SafeArea(child: child ?? const SizedBox.shrink());
+        },
       ),
     );
   }

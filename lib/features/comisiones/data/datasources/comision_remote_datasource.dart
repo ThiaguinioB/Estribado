@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/services/excel_graph_service.dart';
 import '../../../../core/services/pdf_generator_service.dart';
 import '../../domain/entities/comision.dart';
@@ -18,5 +21,21 @@ class ComisionRemoteDataSource {
 
   Future<void> generatePdf(Comision comision) async {
     await pdfService.generateComisionPdf(comision);
+  }
+
+  Future<void> sharePdf(Comision comision) async {
+    final bytes = await pdfService.generateComisionPdfBytes(comision);
+
+    String nombreArchivo = "Comision-${comision.clienteNombre}-${comision.productoNombre}.pdf";
+    nombreArchivo = nombreArchivo.replaceAll(RegExp(r'[^\w\s\-\.]'), '');
+
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$nombreArchivo');
+    await file.writeAsBytes(bytes);
+
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: 'Te envío la comisión: $nombreArchivo',
+    );
   }
 }

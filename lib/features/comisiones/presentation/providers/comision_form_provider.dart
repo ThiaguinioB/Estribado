@@ -55,6 +55,16 @@ class ComisionFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateProveedor(String value) {
+    _state = _state.copyWith(proveedor: value);
+    notifyListeners();
+  }
+
+  void updateUnidad(String value) {
+    _state = _state.copyWith(unidad: value);
+    notifyListeners();
+  }
+
   void updateCantidad(String value) {
     double val = double.tryParse(value) ?? 0.0;
     _state = _state.copyWith(cantidad: val);
@@ -62,7 +72,9 @@ class ComisionFormProvider extends ChangeNotifier {
   }
 
   void updatePrecio(String value) {
-    double val = double.tryParse(value) ?? 0.0;
+    // Remover puntos de separador de miles antes de parsear
+    String cleanValue = value.replaceAll('.', '').replaceAll(',', '.');
+    double val = double.tryParse(cleanValue) ?? 0.0;
     _state = _state.copyWith(precioUnitario: val);
     notifyListeners();
   }
@@ -102,13 +114,15 @@ class ComisionFormProvider extends ChangeNotifier {
     }
   }
 
-  // Exportar a Excel (Microsoft OneDrive)
+  // Exportar a Excel (Microsoft OneDrive) - con autoguardado
   Future<bool> exportarAExcel() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      // Autoguardado antes de exportar
+      await repository.saveComision(_state);
       await repository.exportToExcel([_state]);
       _isLoading = false;
       notifyListeners();
@@ -121,13 +135,15 @@ class ComisionFormProvider extends ChangeNotifier {
     }
   }
 
-  // Generar PDF
+  // Generar PDF - con autoguardado
   Future<bool> generarPdf() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      // Autoguardado antes de generar PDF
+      await repository.saveComision(_state);
       await repository.exportToPdf(_state);
       _isLoading = false;
       notifyListeners();
@@ -135,6 +151,27 @@ class ComisionFormProvider extends ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       _errorMessage = 'Error al generar PDF: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Compartir PDF
+  Future<bool> compartirPdf() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Autoguardado antes de compartir
+      await repository.saveComision(_state);
+      await repository.compartirPdf(_state);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Error al compartir PDF: $e';
       notifyListeners();
       return false;
     }

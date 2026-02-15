@@ -399,7 +399,7 @@ class _RecetaScreenState extends State<RecetaScreen> {
     final dosisController = TextEditingController(
       text: producto?.dosisPorHa.toString() ?? '',
     );
-    String unidadSeleccionada = producto?.unidad ?? 'cc';
+    String unidadSeleccionada = producto?.unidad ?? 'lts';
     bool editandoDosis = true;
 
     showDialog(
@@ -444,10 +444,10 @@ class _RecetaScreenState extends State<RecetaScreen> {
                       border: OutlineInputBorder(),
                     ),
                     items: const [
+                      DropdownMenuItem(value: 'lts', child: Text('lts (litros)')),
+                      DropdownMenuItem(value: 'kg', child: Text('kg (kilogramos)')),
                       DropdownMenuItem(value: 'cc', child: Text('cc (centímetros cúbicos)')),
                       DropdownMenuItem(value: 'g', child: Text('g (gramos)')),
-                      DropdownMenuItem(value: 'kg', child: Text('kg (kilogramos)')),
-                      DropdownMenuItem(value: 'lts', child: Text('lts (litros)')),
                       DropdownMenuItem(value: 'unidades', child: Text('unidades')),
                     ],
                     onChanged: (value) {
@@ -471,12 +471,20 @@ class _RecetaScreenState extends State<RecetaScreen> {
                             if (editandoDosis) {
                               // Cambiar a editar total
                               final total = calcularTotal();
-                              dosisController.text = total.toStringAsFixed(2);
+                              if (total > 0) {
+                                dosisController.text = total.toStringAsFixed(2);
+                              } else {
+                                dosisController.clear();
+                              }
                             } else {
                               // Cambiar a editar dosis
                               final total = double.tryParse(dosisController.text) ?? 0;
                               final dosis = calcularDosis(total);
-                              dosisController.text = dosis.toStringAsFixed(2);
+                              if (dosis > 0) {
+                                dosisController.text = dosis.toStringAsFixed(2);
+                              } else {
+                                dosisController.clear();
+                              }
                             }
                             editandoDosis = !editandoDosis;
                           });

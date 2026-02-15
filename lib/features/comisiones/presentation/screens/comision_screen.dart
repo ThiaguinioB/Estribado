@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/comision_form_provider.dart';
 import '../../domain/entities/comision_validation.dart';
 import '../../data/repositories/comision_repository_impl.dart';
@@ -51,6 +53,7 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
   final _formKey = GlobalKey<FormState>();
   final _clienteController = TextEditingController();
   final _cuitController = TextEditingController();
+  final _proveedorController = TextEditingController();
   final _productoController = TextEditingController();
   final _cantidadController = TextEditingController();
   final _precioController = TextEditingController();
@@ -58,11 +61,13 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
   final _ivaOtroController = TextEditingController();
   
   String _ivaSeleccionado = '21.0'; // Por defecto 21%
+  String _unidadSeleccionada = 'ton'; // Por defecto ton
 
   @override
   void dispose() {
     _clienteController.dispose();
     _cuitController.dispose();
+    _proveedorController.dispose();
     _productoController.dispose();
     _cantidadController.dispose();
     _precioController.dispose();
@@ -107,6 +112,18 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
           ),
           const SizedBox(height: 16),
 
+          // Proveedor
+          TextFormField(
+            controller: _proveedorController,
+            decoration: const InputDecoration(
+              labelText: "Proveedor",
+              prefixIcon: Icon(Icons.business),
+            ),
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: provider.updateProveedor,
+          ),
+          const SizedBox(height: 16),
+
           // Producto
           TextFormField(
             controller: _productoController,
@@ -132,6 +149,28 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
           ),
           const SizedBox(height: 16),
 
+          // Unidad
+          DropdownButtonFormField<String>(
+            value: _unidadSeleccionada,
+            decoration: const InputDecoration(
+              labelText: "Unidad",
+              prefixIcon: Icon(Icons.straighten),
+            ),
+            items: const [
+              DropdownMenuItem(value: 'ton', child: Text('Toneladas')),
+              DropdownMenuItem(value: 'kg', child: Text('Kilogramos')),
+              DropdownMenuItem(value: 'lts', child: Text('Litros')),
+              DropdownMenuItem(value: 'unidad', child: Text('Unidades')),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _unidadSeleccionada = value!;
+                provider.updateUnidad(value);
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+
           // Precio Unitario
           TextFormField(
             controller: _precioController,
@@ -141,7 +180,17 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
               prefixText: "\$ ",
             ),
             keyboardType: TextInputType.number,
-            validator: ComisionValidation.validatePrecio,
+            inputFormatters: [
+              _ThousandSeparatorInputFormatter(),
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) return 'El precio es requerido';
+              final clean = value.replaceAll('.', '').replaceAll(',', '.');
+              final precio = double.tryParse(clean);
+              if (precio == null) return 'Ingrese un precio válido';
+              if (precio <= 0) return 'El precio debe ser mayor a 0';
+              return null;
+            },
             onChanged: provider.updatePrecio,
           ),
           const SizedBox(height: 16),
@@ -289,6 +338,36 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
           ),
           const SizedBox(height: 12),
 
+          // Guardar y Compartir
+          ElevatedButton.icon(
+            icon: provider.isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.share),
+            label: const Text("Guardar y Compartir"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: provider.isLoading
+                ? null
+                : () async {
+                    if (_formKey.currentState!.validate()) {
+                      final success = await provider.compartirPdf();
+                      if (success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Comisión guardada y compartida exitosamente')),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    }
+                  },
+          ),
+          const SizedBox(height: 12),
+
           OutlinedButton.icon(
             icon: const Icon(Icons.cloud_upload),
             label: const Text("Exportar a Microsoft Excel"),
@@ -337,6 +416,11 @@ class _ResultRow extends StatelessWidget {
     this.color,
   });
 
+  String _formatearMiles(double valor) {
+    final formatter = NumberFormat('#,##0.00', 'es_AR');
+    return formatter.format(valor);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -352,7 +436,7 @@ class _ResultRow extends StatelessWidget {
             ),
           ),
           Text(
-            "\$ ${value.toStringAsFixed(2)}",
+            "\$ ${_formatearMiles(value)}",
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
               fontSize: isBold ? 16 : 14,
@@ -361,6 +445,34 @@ class _ResultRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Formateador que agrega separadores de miles (puntos) al escribir
+class _ThousandSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Solo permitir dígitos y puntos
+    String newText = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    
+    if (newText.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Formatear con puntos de miles
+    final formatter = NumberFormat('#,###', 'es_AR');
+    final number = int.tryParse(newText);
+    if (number == null) return newValue;
+    
+    String formatted = formatter.format(number);
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

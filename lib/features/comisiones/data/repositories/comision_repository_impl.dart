@@ -74,4 +74,13 @@ class ComisionRepositoryImpl implements ComisionRepository {
       throw Exception('Error al generar PDF: $e');
     }
   }
+
+  @override
+  Future<void> compartirPdf(Comision comision) async {
+    try {
+      await remoteDataSource.sharePdf(comision);
+    } catch (e) {
+      throw Exception('Error al compartir PDF: $e');
+    }
+  }
 }

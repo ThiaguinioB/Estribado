@@ -5,9 +5,11 @@ class Comision extends Equatable {
   final DateTime fecha;
   final String clienteNombre;
   final String clienteCuit;
+  final String proveedor;
   final String productoNombre;
   final String tipoProducto; // Semilla, Herbicida, etc.
   final double cantidad;
+  final String unidad; // ton, kg, lts, unidad
   final double precioUnitario;
   final double porcentajeIva;
   final double porcentajeComision;
@@ -18,9 +20,11 @@ class Comision extends Equatable {
     required this.fecha,
     required this.clienteNombre,
     required this.clienteCuit,
+    this.proveedor = '',
     required this.productoNombre,
     required this.tipoProducto,
     this.cantidad = 0.0,
+    this.unidad = 'ton',
     this.precioUnitario = 0.0,
     this.porcentajeIva = 21.0,
     this.porcentajeComision = 0.0,
@@ -44,9 +48,11 @@ class Comision extends Equatable {
     DateTime? fecha,
     String? clienteNombre,
     String? clienteCuit,
+    String? proveedor,
     String? productoNombre,
     String? tipoProducto,
     double? cantidad,
+    String? unidad,
     double? precioUnitario,
     double? porcentajeIva,
     double? porcentajeComision,
@@ -57,9 +63,11 @@ class Comision extends Equatable {
       fecha: fecha ?? this.fecha,
       clienteNombre: clienteNombre ?? this.clienteNombre,
       clienteCuit: clienteCuit ?? this.clienteCuit,
+      proveedor: proveedor ?? this.proveedor,
       productoNombre: productoNombre ?? this.productoNombre,
       tipoProducto: tipoProducto ?? this.tipoProducto,
       cantidad: cantidad ?? this.cantidad,
+      unidad: unidad ?? this.unidad,
       precioUnitario: precioUnitario ?? this.precioUnitario,
       porcentajeIva: porcentajeIva ?? this.porcentajeIva,
       porcentajeComision: porcentajeComision ?? this.porcentajeComision,
