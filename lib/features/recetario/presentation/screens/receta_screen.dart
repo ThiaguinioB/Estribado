@@ -337,7 +337,18 @@ class _RecetaScreenState extends State<RecetaScreen> {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.add),
                   label: const Text('Agregar'),
-                  onPressed: () => _mostrarDialogoProducto(context, provider),
+                  onPressed: () {
+                    if (provider.cantidadHas <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Primero cargá la cantidad de hectáreas'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
+                    _mostrarDialogoProducto(context, provider);
+                  },
                 ),
               ],
             ),
