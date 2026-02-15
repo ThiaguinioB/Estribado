@@ -29,13 +29,15 @@ class PdfGeneratorService {
             ),
             pw.SizedBox(height: 20),
 
-            // Información del cliente
-            pw.Text('DATOS DEL CLIENTE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            // Información
+            pw.Text('DATOS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             pw.Divider(),
+            _buildInfoRow('Proveedor:', comision.proveedor),
+            if (comision.proveedorCuit.isNotEmpty)
+              _buildInfoRow('CUIT/CUIL Prov.:', comision.proveedorCuit),
             _buildInfoRow('Cliente:', comision.clienteNombre),
-            _buildInfoRow('CUIT:', comision.clienteCuit),
-            if (comision.proveedor.isNotEmpty)
-              _buildInfoRow('Proveedor:', comision.proveedor),
+            if (comision.clienteCuit.isNotEmpty)
+              _buildInfoRow('CUIT/CUIL Cliente:', comision.clienteCuit),
             _buildInfoRow('Fecha:', dateFormat.format(comision.fecha)),
             if (comision.numeroOperacion != null)
               _buildInfoRow('N° Operación:', comision.numeroOperacion.toString()),
@@ -117,12 +119,14 @@ class PdfGeneratorService {
               ),
             ),
             pw.SizedBox(height: 20),
-            pw.Text('DATOS DEL CLIENTE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Text('DATOS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             pw.Divider(),
+            _buildInfoRow('Proveedor:', comision.proveedor),
+            if (comision.proveedorCuit.isNotEmpty)
+              _buildInfoRow('CUIT/CUIL Prov.:', comision.proveedorCuit),
             _buildInfoRow('Cliente:', comision.clienteNombre),
-            _buildInfoRow('CUIT:', comision.clienteCuit),
-            if (comision.proveedor.isNotEmpty)
-              _buildInfoRow('Proveedor:', comision.proveedor),
+            if (comision.clienteCuit.isNotEmpty)
+              _buildInfoRow('CUIT/CUIL Cliente:', comision.clienteCuit),
             _buildInfoRow('Fecha:', dateFormat.format(comision.fecha)),
             if (comision.numeroOperacion != null)
               _buildInfoRow('N° Operación:', comision.numeroOperacion.toString()),

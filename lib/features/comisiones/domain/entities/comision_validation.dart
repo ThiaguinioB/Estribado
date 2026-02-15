@@ -11,19 +11,20 @@ class ComisionValidation {
   }
 
   static String? validateClienteCuit(String? value) {
+    // CUIT es opcional
     if (value == null || value.isEmpty) {
-      return 'El CUIT es requerido';
+      return null;
     }
     
     // Remover guiones para validación
     final cuitClean = value.replaceAll('-', '');
     
     if (cuitClean.length != 11) {
-      return 'El CUIT debe tener 11 dígitos';
+      return 'El CUIT/CUIL debe tener 11 dígitos';
     }
     
     if (!RegExp(r'^\d+$').hasMatch(cuitClean)) {
-      return 'El CUIT solo debe contener números';
+      return 'El CUIT/CUIL solo debe contener números';
     }
     
     return null;

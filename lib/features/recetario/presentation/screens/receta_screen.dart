@@ -514,14 +514,19 @@ class _RecetaScreenState extends State<RecetaScreen> {
                   if (nombre.isEmpty) return;
 
                   double dosis;
+                  double total;
                   if (editandoDosis) {
                     dosis = double.tryParse(dosisController.text) ?? 0;
+                    total = RecetaValidation.calcularTotalDesdeDosis(
+                      dosis,
+                      provider.cantidadHas,
+                      unidadSeleccionada,
+                    );
                   } else {
-                    final total = double.tryParse(dosisController.text) ?? 0;
+                    total = double.tryParse(dosisController.text) ?? 0;
                     dosis = calcularDosis(total);
                   }
 
-                  final total = calcularTotal();
                   final unidadTotal = RecetaValidation.obtenerUnidadConvertida(
                     unidadSeleccionada,
                     total,

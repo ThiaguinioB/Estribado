@@ -32,8 +32,8 @@ class ComisionFormProvider extends ChangeNotifier {
 
   // Validación del formulario
   bool get isValid {
-    return _state.clienteNombre.isNotEmpty &&
-           _state.clienteCuit.isNotEmpty &&
+    return _state.proveedor.isNotEmpty &&
+           _state.clienteNombre.isNotEmpty &&
            _state.productoNombre.isNotEmpty &&
            _state.cantidad > 0 &&
            _state.precioUnitario > 0;
@@ -57,6 +57,11 @@ class ComisionFormProvider extends ChangeNotifier {
 
   void updateProveedor(String value) {
     _state = _state.copyWith(proveedor: value);
+    notifyListeners();
+  }
+
+  void updateProveedorCuit(String value) {
+    _state = _state.copyWith(proveedorCuit: value);
     notifyListeners();
   }
 

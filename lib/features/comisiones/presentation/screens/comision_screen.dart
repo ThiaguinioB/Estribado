@@ -51,9 +51,10 @@ class _ComisionFormBody extends StatefulWidget {
 
 class _ComisionFormBodyState extends State<_ComisionFormBody> {
   final _formKey = GlobalKey<FormState>();
+  final _proveedorController = TextEditingController();
+  final _proveedorCuitController = TextEditingController();
   final _clienteController = TextEditingController();
   final _cuitController = TextEditingController();
-  final _proveedorController = TextEditingController();
   final _productoController = TextEditingController();
   final _cantidadController = TextEditingController();
   final _precioController = TextEditingController();
@@ -65,9 +66,10 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
 
   @override
   void dispose() {
+    _proveedorController.dispose();
+    _proveedorCuitController.dispose();
     _clienteController.dispose();
     _cuitController.dispose();
-    _proveedorController.dispose();
     _productoController.dispose();
     _cantidadController.dispose();
     _precioController.dispose();
@@ -86,41 +88,62 @@ class _ComisionFormBodyState extends State<_ComisionFormBody> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Proveedor
+          TextFormField(
+            controller: _proveedorController,
+            decoration: const InputDecoration(
+              labelText: "Proveedor *",
+              prefixIcon: Icon(Icons.business),
+            ),
+            textCapitalization: TextCapitalization.sentences,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'El proveedor es requerido';
+              }
+              return null;
+            },
+            onChanged: provider.updateProveedor,
+          ),
+          const SizedBox(height: 16),
+
+          // CUIT/CUIL Proveedor
+          TextFormField(
+            controller: _proveedorCuitController,
+            decoration: const InputDecoration(
+              labelText: "CUIT/CUIL Proveedor",
+              prefixIcon: Icon(Icons.badge),
+              hintText: "20-12345678-9",
+            ),
+            keyboardType: TextInputType.number,
+            validator: ComisionValidation.validateClienteCuit,
+            onChanged: provider.updateProveedorCuit,
+          ),
+          const SizedBox(height: 16),
+
           // Cliente
           TextFormField(
             controller: _clienteController,
             decoration: const InputDecoration(
-              labelText: "Nombre del Cliente *",
+              labelText: "Cliente *",
               prefixIcon: Icon(Icons.person),
             ),
+            textCapitalization: TextCapitalization.sentences,
             validator: ComisionValidation.validateClienteNombre,
             onChanged: provider.updateClienteNombre,
           ),
           const SizedBox(height: 16),
 
-          // CUIT
+          // CUIT/CUIL Cliente
           TextFormField(
             controller: _cuitController,
             decoration: const InputDecoration(
-              labelText: "CUIT *",
+              labelText: "CUIT/CUIL Cliente",
               prefixIcon: Icon(Icons.badge),
               hintText: "20-12345678-9",
             ),
             keyboardType: TextInputType.number,
             validator: ComisionValidation.validateClienteCuit,
             onChanged: provider.updateClienteCuit,
-          ),
-          const SizedBox(height: 16),
-
-          // Proveedor
-          TextFormField(
-            controller: _proveedorController,
-            decoration: const InputDecoration(
-              labelText: "Proveedor",
-              prefixIcon: Icon(Icons.business),
-            ),
-            textCapitalization: TextCapitalization.sentences,
-            onChanged: provider.updateProveedor,
           ),
           const SizedBox(height: 16),
 

@@ -6,6 +6,7 @@ class Comision extends Equatable {
   final String clienteNombre;
   final String clienteCuit;
   final String proveedor;
+  final String proveedorCuit;
   final String productoNombre;
   final String tipoProducto; // Semilla, Herbicida, etc.
   final double cantidad;
@@ -19,8 +20,9 @@ class Comision extends Equatable {
     this.numeroOperacion,
     required this.fecha,
     required this.clienteNombre,
-    required this.clienteCuit,
+    this.clienteCuit = '',
     this.proveedor = '',
+    this.proveedorCuit = '',
     required this.productoNombre,
     required this.tipoProducto,
     this.cantidad = 0.0,
@@ -49,6 +51,7 @@ class Comision extends Equatable {
     String? clienteNombre,
     String? clienteCuit,
     String? proveedor,
+    String? proveedorCuit,
     String? productoNombre,
     String? tipoProducto,
     double? cantidad,
@@ -64,6 +67,7 @@ class Comision extends Equatable {
       clienteNombre: clienteNombre ?? this.clienteNombre,
       clienteCuit: clienteCuit ?? this.clienteCuit,
       proveedor: proveedor ?? this.proveedor,
+      proveedorCuit: proveedorCuit ?? this.proveedorCuit,
       productoNombre: productoNombre ?? this.productoNombre,
       tipoProducto: tipoProducto ?? this.tipoProducto,
       cantidad: cantidad ?? this.cantidad,
